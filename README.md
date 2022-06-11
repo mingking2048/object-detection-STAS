@@ -125,15 +125,15 @@ https://drive.google.com/file/d/1aUc8Zp9csj_37urILyfa_JkZ7M05ohI7/view?usp=shari
 CUDA_VISIBLE_DEVICES=0 python tools/test.py configs/my_config/htc_cbv2_swin_base_patch4_window7_mstrain_400-1400_adamw_20e_coco_finetune.py work_dirs/new_epoch7_fine/latest.pth --output_json_path.json (--out 可以指定result的位置)
 ```
 
-
-
+## Citation
+```sh
 @article{liang2021cbnetv2,
   title={CBNetV2: A Composite Backbone Network Architecture for Object Detection}, 
   author={Tingting Liang and Xiaojie Chu and Yudong Liu and Yongtao Wang and Zhi Tang and Wei Chu and Jingdong Chen and Haibing Ling},
   journal={arXiv preprint arXiv:2107.00420},
   year={2021}
 }
-
+```
 
 
 
