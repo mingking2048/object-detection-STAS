@@ -1,6 +1,6 @@
 # CBNetV2: A Novel Composite Backbone Network Architecture for Object Detection
 
-##安裝虛擬環境(建議參考:https://github.com/open-mmlab/mmdetection/blob/master/docs/en/get_started.md)
+＃＃安裝虛擬環境(建議參考:https://github.com/open-mmlab/mmdetection/blob/master/docs/en/get_started.md)
 版本及cuda和gpu型號都有不同需下安裝指令，請查閱以上網址
 以下是我的版本
 -------------------------------------
