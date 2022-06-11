@@ -2,7 +2,7 @@
 
 ## 安裝虛擬環境  
 (建議參考:https://github.com/openmmlab/mmdetection/blob/master/docs/en/get_started.md)  
-版本及cuda和gpu型號都有不同需下安裝指令，請查閱以上網址，以下是我的版本
+版本及cuda和gpu型號都有不同的安裝指令，請查閱以上網址，以下是我的版本
 
 NAME="Ubuntu"  
 VERSION="18.04.6 LTS (Bionic Beaver)"  
@@ -98,8 +98,9 @@ pretrain_model_weight
 ### step3 產生訓練pickle檔
 在code目錄中
 ```sh
-python STAS2pickle.py --sp 0.9  (sp為 train val比例) file is save on: ./data/OBJ_Train_Datasets/pkl
+python STAS2pickle.py --sp 0.9  
 ```
+(sp為 train val比例) file is save on: ./data/OBJ_Train_Datasets/pkl
 ### step4 開始訓練
 ```sh
 CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch  tools/train.py configs/my_config/htc_cbv2_swin_base_patch4_window7_mstrain_400-1400_adamw_20e_coco_base.py --seed 12060911 --gpus 1 --deterministic   --work-dir ./work_dirs/new_epoch7
@@ -122,8 +123,9 @@ https://drive.google.com/file/d/1aUc8Zp9csj_37urILyfa_JkZ7M05ohI7/view?usp=shari
 ```
 
 ```sh
-CUDA_VISIBLE_DEVICES=0 python tools/test.py configs/my_config/htc_cbv2_swin_base_patch4_window7_mstrain_400-1400_adamw_20e_coco_finetune.py work_dirs/new_epoch7_fine/latest.pth --output_json_path.json (--out 可以指定result的位置)
+CUDA_VISIBLE_DEVICES=0 python tools/test.py configs/my_config/htc_cbv2_swin_base_patch4_window7_mstrain_400-1400_adamw_20e_coco_finetune.py work_dirs/new_epoch7_fine/latest.pth --output_json_path.json 
 ```
+(--out 可以指定result的位置)
 
 ## Citation
 ```sh
