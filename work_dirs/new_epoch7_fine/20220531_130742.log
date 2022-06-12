@@ -1,0 +1,2738 @@
+2022-05-31 13:07:42,954 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.8.12 (default, Jan 15 2022, 18:39:47) [GCC 7.5.0]
+CUDA available: True
+GPU 0: GeForce RTX 2080 Ti
+CUDA_HOME: /usr/local/cuda
+NVCC: Cuda compilation tools, release 10.2, V10.2.89
+GCC: gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0
+PyTorch: 1.10.2+cu102
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191122 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.2.3 (Git Hash 7336ca9f055cf1bfa13efb658fe15dc9b41f0740)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX512
+  - CUDA Runtime 10.2
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70
+  - CuDNN 7.6.5
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=10.2, CUDNN_VERSION=7.6.5, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.10.2, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, 
+
+TorchVision: 0.11.3+cu102
+OpenCV: 4.5.5
+MMCV: 1.4.0
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 10.2
+MMDetection: 2.14.0+a546be5
+------------------------------------------------------------
+
+2022-05-31 13:07:44,178 - mmdet - INFO - Distributed training: False
+2022-05-31 13:07:45,413 - mmdet - INFO - Config:
+model = dict(
+    type='HybridTaskCascade',
+    pretrained=None,
+    backbone=dict(
+        type='CBSwinTransformer',
+        embed_dim=128,
+        depths=[2, 2, 18, 2],
+        num_heads=[4, 8, 16, 32],
+        window_size=7,
+        mlp_ratio=4.0,
+        qkv_bias=True,
+        qk_scale=None,
+        drop_rate=0.0,
+        attn_drop_rate=0.0,
+        drop_path_rate=0.3,
+        ape=False,
+        patch_norm=True,
+        out_indices=(0, 1, 2, 3),
+        use_checkpoint=False),
+    neck=dict(
+        type='CBFPN',
+        in_channels=[128, 256, 512, 1024],
+        out_channels=256,
+        num_outs=5),
+    rpn_head=dict(
+        type='RPNHead',
+        in_channels=256,
+        feat_channels=256,
+        anchor_generator=dict(
+            type='AnchorGenerator',
+            scales=[4],
+            ratios=[0.78, 0.92, 1.0, 1.2, 1.41],
+            strides=[4, 8, 16, 32, 64]),
+        bbox_coder=dict(
+            type='DeltaXYWHBBoxCoder',
+            target_means=[0.0, 0.0, 0.0, 0.0],
+            target_stds=[1.0, 1.0, 1.0, 1.0]),
+        loss_bbox=dict(
+            type='SmoothL1Loss', beta=0.1111111111111111, loss_weight=1.0)),
+    roi_head=dict(
+        type='HybridTaskCascadeRoIHead',
+        interleaved=True,
+        mask_info_flow=True,
+        num_stages=3,
+        stage_loss_weights=[1, 0.5, 0.25],
+        bbox_roi_extractor=dict(
+            type='SingleRoIExtractor',
+            roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
+            out_channels=256,
+            featmap_strides=[4, 8, 16, 32]),
+        bbox_head=[
+            dict(
+                type='ConvFCBBoxHead',
+                num_shared_convs=4,
+                num_shared_fcs=1,
+                in_channels=256,
+                conv_out_channels=256,
+                fc_out_channels=1024,
+                roi_feat_size=7,
+                num_classes=1,
+                bbox_coder=dict(
+                    type='DeltaXYWHBBoxCoder',
+                    target_means=[0.0, 0.0, 0.0, 0.0],
+                    target_stds=[0.1, 0.1, 0.2, 0.2]),
+                reg_class_agnostic=True,
+                reg_decoded_bbox=True,
+                norm_cfg=dict(type='SyncBN', requires_grad=True),
+                loss_bbox=dict(type='GIoULoss', loss_weight=10.0)),
+            dict(
+                type='ConvFCBBoxHead',
+                num_shared_convs=4,
+                num_shared_fcs=1,
+                in_channels=256,
+                conv_out_channels=256,
+                fc_out_channels=1024,
+                roi_feat_size=7,
+                num_classes=1,
+                bbox_coder=dict(
+                    type='DeltaXYWHBBoxCoder',
+                    target_means=[0.0, 0.0, 0.0, 0.0],
+                    target_stds=[0.05, 0.05, 0.1, 0.1]),
+                reg_class_agnostic=True,
+                reg_decoded_bbox=True,
+                norm_cfg=dict(type='SyncBN', requires_grad=True),
+                loss_bbox=dict(type='GIoULoss', loss_weight=10.0)),
+            dict(
+                type='ConvFCBBoxHead',
+                num_shared_convs=4,
+                num_shared_fcs=1,
+                in_channels=256,
+                conv_out_channels=256,
+                fc_out_channels=1024,
+                roi_feat_size=7,
+                num_classes=1,
+                bbox_coder=dict(
+                    type='DeltaXYWHBBoxCoder',
+                    target_means=[0.0, 0.0, 0.0, 0.0],
+                    target_stds=[0.033, 0.033, 0.067, 0.067]),
+                reg_class_agnostic=True,
+                reg_decoded_bbox=True,
+                norm_cfg=dict(type='SyncBN', requires_grad=True),
+                loss_bbox=dict(type='GIoULoss', loss_weight=10.0))
+        ]),
+    train_cfg=dict(
+        rpn=dict(
+            assigner=dict(
+                type='MaxIoUAssigner',
+                pos_iou_thr=0.7,
+                neg_iou_thr=0.3,
+                min_pos_iou=0.3,
+                ignore_iof_thr=-1),
+            sampler=dict(
+                type='RandomSampler',
+                num=256,
+                pos_fraction=0.5,
+                neg_pos_ub=-1,
+                add_gt_as_proposals=False),
+            allowed_border=0,
+            pos_weight=-1,
+            debug=False),
+        rpn_proposal=dict(
+            nms_pre=2000,
+            max_per_img=2000,
+            nms=dict(type='nms', iou_threshold=0.7),
+            min_bbox_size=0),
+        rcnn=[
+            dict(
+                assigner=dict(
+                    type='MaxIoUAssigner',
+                    pos_iou_thr=0.5,
+                    neg_iou_thr=0.5,
+                    min_pos_iou=0.5,
+                    ignore_iof_thr=-1),
+                sampler=dict(
+                    type='OHEMSampler',
+                    num=512,
+                    pos_fraction=0.25,
+                    neg_pos_ub=-1,
+                    add_gt_as_proposals=True),
+                mask_size=28,
+                pos_weight=-1,
+                debug=False),
+            dict(
+                assigner=dict(
+                    type='MaxIoUAssigner',
+                    pos_iou_thr=0.6,
+                    neg_iou_thr=0.6,
+                    min_pos_iou=0.6,
+                    ignore_iof_thr=-1),
+                sampler=dict(
+                    type='OHEMSampler',
+                    num=512,
+                    pos_fraction=0.25,
+                    neg_pos_ub=-1,
+                    add_gt_as_proposals=True),
+                mask_size=28,
+                pos_weight=-1,
+                debug=False),
+            dict(
+                assigner=dict(
+                    type='MaxIoUAssigner',
+                    pos_iou_thr=0.7,
+                    neg_iou_thr=0.7,
+                    min_pos_iou=0.7,
+                    ignore_iof_thr=-1),
+                sampler=dict(
+                    type='OHEMSampler',
+                    num=512,
+                    pos_fraction=0.25,
+                    neg_pos_ub=-1,
+                    add_gt_as_proposals=True),
+                mask_size=28,
+                pos_weight=-1,
+                debug=False)
+        ]),
+    test_cfg=dict(
+        rpn=dict(
+            nms_pre=1000,
+            max_per_img=1000,
+            nms=dict(type='soft_nms', iou_threshold=0.7),
+            min_bbox_size=0),
+        rcnn=dict(
+            score_thr=0.05,
+            nms=dict(type='soft_nms', iou_threshold=0.5),
+            max_per_img=200,
+            mask_thr_binary=0.5,
+            iou_threshold=0.5)))
+optimizer = dict(
+    type='AdamW',
+    lr=1e-05,
+    betas=(0.9, 0.999),
+    weight_decay=0.05,
+    paramwise_cfg=dict(
+        custom_keys=dict(
+            absolute_pos_embed=dict(decay_mult=0.0),
+            relative_position_bias_table=dict(decay_mult=0.0),
+            norm=dict(decay_mult=0.0))))
+optimizer_config = dict(
+    grad_clip=None,
+    type='DistOptimizerHook',
+    update_interval=1,
+    coalesce=True,
+    bucket_size_mb=-1,
+    use_fp16=True)
+checkpoint_config = dict(interval=1)
+log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
+custom_hooks = [dict(type='NumClassCheckHook')]
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = './work_dirs/new_epoch7/latest.pth'
+resume_from = None
+workflow = [('train', 1), ('val', 1)]
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+fp16 = None
+dataset_type = 'CustomDataset'
+data_root = 'data/OBJ_Train_Datasets/'
+mutli_scale_image_size = [(686, 376), (950, 520)]
+test_mutli_scale_image_size = [(858, 471), (943, 518), (1000, 565),
+                               (1115, 612), (1200, 660)]
+albu_train_transforms = [
+    dict(
+        type='RandomBrightnessContrast',
+        brightness_limit=[0.1, 0.3],
+        contrast_limit=[0.1, 0.3],
+        p=0.1),
+    dict(
+        type='OneOf',
+        transforms=[
+            dict(
+                type='RGBShift',
+                r_shift_limit=10,
+                g_shift_limit=10,
+                b_shift_limit=10,
+                p=1.0),
+            dict(
+                type='HueSaturationValue',
+                hue_shift_limit=20,
+                sat_shift_limit=30,
+                val_shift_limit=20,
+                p=1.0),
+            dict(type='FancyPCA', alpha=0.1, always_apply=False, p=1.0)
+        ],
+        p=0.1)
+]
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(
+        type='Resize',
+        img_scale=[(686, 376), (950, 520)],
+        multiscale_mode='range',
+        keep_ratio=True),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(
+        type='Normalize',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=[(858, 471), (943, 518), (1000, 565), (1115, 612),
+                   (1200, 660)],
+        flip=True,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+samples_per_gpu = 1
+workers_per_gpu = 1
+runner = dict(type='EpochBasedRunnerAmp', max_epochs=2)
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.001,
+    step=[3, 5])
+classes = ('stas', )
+data = dict(
+    samples_per_gpu=1,
+    workers_per_gpu=1,
+    train=dict(
+        type='CustomDataset',
+        classes=('stas', ),
+        ann_file='data/OBJ_Train_Datasets/custom/STAS_final.pkl',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(
+                type='Resize',
+                img_scale=[(686, 376), (950, 520)],
+                multiscale_mode='range',
+                keep_ratio=True),
+            dict(type='RandomFlip', flip_ratio=0.5),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+        ]),
+    val=dict(
+        type='CustomDataset',
+        classes=('stas', ),
+        ann_file='data/OBJ_Train_Datasets/custom/STAS_val.pkl',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=[(858, 471), (943, 518), (1000, 565), (1115, 612),
+                           (1200, 660)],
+                flip=True,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]),
+    test=dict(
+        type='CustomDataset',
+        classes=('stas', ),
+        ann_file='data/OBJ_Train_Datasets/custom/STAS_test.pkl',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=[(858, 471), (943, 518), (1000, 565), (1115, 612),
+                           (1200, 660)],
+                flip=True,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]))
+evaluation = dict(metric=['mAP'])
+work_dir = 'work_dirs/new_epoch7_fine'
+gpu_ids = range(0, 1)
+
+2022-05-31 13:07:45,413 - mmdet - INFO - Set random seed to 1206, deterministic: True
+2022-05-31 13:07:49,595 - mmdet - INFO - initialize CBFPN with init_cfg {'type': 'Xavier', 'layer': 'Conv2d', 'distribution': 'uniform'}
+2022-05-31 13:07:49,624 - mmdet - INFO - initialize RPNHead with init_cfg {'type': 'Normal', 'layer': 'Conv2d', 'std': 0.01}
+2022-05-31 13:07:49,632 - mmdet - INFO - initialize ConvFCBBoxHead with init_cfg [{'type': 'Normal', 'std': 0.01, 'override': {'name': 'fc_cls'}}, {'type': 'Normal', 'std': 0.001, 'override': {'name': 'fc_reg'}}, {'type': 'Xavier', 'layer': 'Linear', 'override': [{'name': 'shared_fcs'}, {'name': 'cls_fcs'}, {'name': 'reg_fcs'}]}]
+2022-05-31 13:07:49,825 - mmdet - INFO - initialize ConvFCBBoxHead with init_cfg [{'type': 'Normal', 'std': 0.01, 'override': {'name': 'fc_cls'}}, {'type': 'Normal', 'std': 0.001, 'override': {'name': 'fc_reg'}}, {'type': 'Xavier', 'layer': 'Linear', 'override': [{'name': 'shared_fcs'}, {'name': 'cls_fcs'}, {'name': 'reg_fcs'}]}]
+2022-05-31 13:07:50,018 - mmdet - INFO - initialize ConvFCBBoxHead with init_cfg [{'type': 'Normal', 'std': 0.01, 'override': {'name': 'fc_cls'}}, {'type': 'Normal', 'std': 0.001, 'override': {'name': 'fc_reg'}}, {'type': 'Xavier', 'layer': 'Linear', 'override': [{'name': 'shared_fcs'}, {'name': 'cls_fcs'}, {'name': 'reg_fcs'}]}]
+Name of parameter - Initialization information
+
+backbone.cb_modules.0.patch_embed.proj.weight - torch.Size([128, 3, 4, 4]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.patch_embed.proj.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.patch_embed.norm.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.patch_embed.norm.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.0.blocks.0.norm1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.0.blocks.0.norm1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.0.blocks.0.attn.relative_position_bias_table - torch.Size([169, 4]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.0.blocks.0.attn.qkv.weight - torch.Size([384, 128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.blocks.0.attn.qkv.bias - torch.Size([384]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.blocks.0.attn.proj.weight - torch.Size([128, 128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.blocks.0.attn.proj.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.blocks.0.norm2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.0.blocks.0.norm2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.0.blocks.0.mlp.fc1.weight - torch.Size([512, 128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.blocks.0.mlp.fc1.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.blocks.0.mlp.fc2.weight - torch.Size([128, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.blocks.0.mlp.fc2.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.blocks.1.norm1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.0.blocks.1.norm1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.0.blocks.1.attn.relative_position_bias_table - torch.Size([169, 4]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.0.blocks.1.attn.qkv.weight - torch.Size([384, 128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.blocks.1.attn.qkv.bias - torch.Size([384]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.blocks.1.attn.proj.weight - torch.Size([128, 128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.blocks.1.attn.proj.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.blocks.1.norm2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.0.blocks.1.norm2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.0.blocks.1.mlp.fc1.weight - torch.Size([512, 128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.blocks.1.mlp.fc1.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.blocks.1.mlp.fc2.weight - torch.Size([128, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.blocks.1.mlp.fc2.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.downsample.reduction.weight - torch.Size([256, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.0.downsample.norm.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.0.downsample.norm.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.1.blocks.0.norm1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.1.blocks.0.norm1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.1.blocks.0.attn.relative_position_bias_table - torch.Size([169, 8]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.1.blocks.0.attn.qkv.weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.blocks.0.attn.qkv.bias - torch.Size([768]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.blocks.0.attn.proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.blocks.0.attn.proj.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.blocks.0.norm2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.1.blocks.0.norm2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.1.blocks.0.mlp.fc1.weight - torch.Size([1024, 256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.blocks.0.mlp.fc1.bias - torch.Size([1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.blocks.0.mlp.fc2.weight - torch.Size([256, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.blocks.0.mlp.fc2.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.blocks.1.norm1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.1.blocks.1.norm1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.1.blocks.1.attn.relative_position_bias_table - torch.Size([169, 8]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.1.blocks.1.attn.qkv.weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.blocks.1.attn.qkv.bias - torch.Size([768]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.blocks.1.attn.proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.blocks.1.attn.proj.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.blocks.1.norm2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.1.blocks.1.norm2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.1.blocks.1.mlp.fc1.weight - torch.Size([1024, 256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.blocks.1.mlp.fc1.bias - torch.Size([1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.blocks.1.mlp.fc2.weight - torch.Size([256, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.blocks.1.mlp.fc2.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.downsample.reduction.weight - torch.Size([512, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.1.downsample.norm.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.1.downsample.norm.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.0.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.0.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.0.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.0.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.0.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.0.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.0.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.0.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.0.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.0.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.0.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.0.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.0.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.1.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.1.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.1.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.1.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.1.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.1.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.1.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.1.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.1.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.1.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.1.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.1.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.1.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.2.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.2.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.2.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.2.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.2.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.2.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.2.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.2.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.2.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.2.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.2.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.2.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.2.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.3.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.3.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.3.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.3.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.3.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.3.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.3.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.3.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.3.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.3.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.3.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.3.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.3.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.4.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.4.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.4.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.4.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.4.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.4.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.4.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.4.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.4.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.4.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.4.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.4.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.4.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.5.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.5.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.5.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.5.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.5.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.5.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.5.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.5.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.5.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.5.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.5.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.5.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.5.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.6.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.6.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.6.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.6.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.6.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.6.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.6.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.6.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.6.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.6.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.6.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.6.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.6.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.7.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.7.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.7.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.7.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.7.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.7.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.7.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.7.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.7.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.7.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.7.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.7.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.7.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.8.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.8.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.8.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.8.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.8.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.8.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.8.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.8.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.8.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.8.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.8.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.8.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.8.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.9.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.9.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.9.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.9.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.9.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.9.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.9.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.9.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.9.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.9.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.9.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.9.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.9.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.10.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.10.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.10.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.10.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.10.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.10.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.10.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.10.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.10.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.10.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.10.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.10.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.10.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.11.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.11.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.11.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.11.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.11.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.11.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.11.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.11.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.11.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.11.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.11.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.11.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.11.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.12.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.12.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.12.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.12.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.12.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.12.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.12.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.12.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.12.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.12.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.12.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.12.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.12.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.13.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.13.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.13.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.13.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.13.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.13.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.13.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.13.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.13.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.13.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.13.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.13.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.13.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.14.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.14.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.14.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.14.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.14.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.14.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.14.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.14.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.14.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.14.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.14.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.14.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.14.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.15.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.15.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.15.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.15.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.15.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.15.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.15.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.15.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.15.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.15.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.15.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.15.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.15.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.16.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.16.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.16.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.16.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.16.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.16.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.16.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.16.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.16.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.16.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.16.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.16.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.16.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.17.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.17.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.17.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.17.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.17.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.17.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.17.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.17.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.17.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.blocks.17.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.17.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.17.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.blocks.17.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.downsample.reduction.weight - torch.Size([1024, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.2.downsample.norm.weight - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.2.downsample.norm.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.3.blocks.0.norm1.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.3.blocks.0.norm1.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.3.blocks.0.attn.relative_position_bias_table - torch.Size([169, 32]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.3.blocks.0.attn.qkv.weight - torch.Size([3072, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.3.blocks.0.attn.qkv.bias - torch.Size([3072]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.3.blocks.0.attn.proj.weight - torch.Size([1024, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.3.blocks.0.attn.proj.bias - torch.Size([1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.3.blocks.0.norm2.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.3.blocks.0.norm2.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.3.blocks.0.mlp.fc1.weight - torch.Size([4096, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.3.blocks.0.mlp.fc1.bias - torch.Size([4096]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.3.blocks.0.mlp.fc2.weight - torch.Size([1024, 4096]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.3.blocks.0.mlp.fc2.bias - torch.Size([1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.3.blocks.1.norm1.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.3.blocks.1.norm1.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.3.blocks.1.attn.relative_position_bias_table - torch.Size([169, 32]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.3.blocks.1.attn.qkv.weight - torch.Size([3072, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.3.blocks.1.attn.qkv.bias - torch.Size([3072]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.3.blocks.1.attn.proj.weight - torch.Size([1024, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.3.blocks.1.attn.proj.bias - torch.Size([1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.3.blocks.1.norm2.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.3.blocks.1.norm2.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.layers.3.blocks.1.mlp.fc1.weight - torch.Size([4096, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.3.blocks.1.mlp.fc1.bias - torch.Size([4096]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.3.blocks.1.mlp.fc2.weight - torch.Size([1024, 4096]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.layers.3.blocks.1.mlp.fc2.bias - torch.Size([1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.0.norm0.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.norm0.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.norm1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.norm1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.norm3.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.0.norm3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.0.blocks.0.norm1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.0.blocks.0.norm1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.0.blocks.0.attn.relative_position_bias_table - torch.Size([169, 4]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.0.blocks.0.attn.qkv.weight - torch.Size([384, 128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.blocks.0.attn.qkv.bias - torch.Size([384]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.blocks.0.attn.proj.weight - torch.Size([128, 128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.blocks.0.attn.proj.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.blocks.0.norm2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.0.blocks.0.norm2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.0.blocks.0.mlp.fc1.weight - torch.Size([512, 128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.blocks.0.mlp.fc1.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.blocks.0.mlp.fc2.weight - torch.Size([128, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.blocks.0.mlp.fc2.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.blocks.1.norm1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.0.blocks.1.norm1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.0.blocks.1.attn.relative_position_bias_table - torch.Size([169, 4]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.0.blocks.1.attn.qkv.weight - torch.Size([384, 128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.blocks.1.attn.qkv.bias - torch.Size([384]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.blocks.1.attn.proj.weight - torch.Size([128, 128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.blocks.1.attn.proj.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.blocks.1.norm2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.0.blocks.1.norm2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.0.blocks.1.mlp.fc1.weight - torch.Size([512, 128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.blocks.1.mlp.fc1.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.blocks.1.mlp.fc2.weight - torch.Size([128, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.blocks.1.mlp.fc2.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.downsample.reduction.weight - torch.Size([256, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.0.downsample.norm.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.0.downsample.norm.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.1.blocks.0.norm1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.1.blocks.0.norm1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.1.blocks.0.attn.relative_position_bias_table - torch.Size([169, 8]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.1.blocks.0.attn.qkv.weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.blocks.0.attn.qkv.bias - torch.Size([768]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.blocks.0.attn.proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.blocks.0.attn.proj.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.blocks.0.norm2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.1.blocks.0.norm2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.1.blocks.0.mlp.fc1.weight - torch.Size([1024, 256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.blocks.0.mlp.fc1.bias - torch.Size([1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.blocks.0.mlp.fc2.weight - torch.Size([256, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.blocks.0.mlp.fc2.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.blocks.1.norm1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.1.blocks.1.norm1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.1.blocks.1.attn.relative_position_bias_table - torch.Size([169, 8]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.1.blocks.1.attn.qkv.weight - torch.Size([768, 256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.blocks.1.attn.qkv.bias - torch.Size([768]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.blocks.1.attn.proj.weight - torch.Size([256, 256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.blocks.1.attn.proj.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.blocks.1.norm2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.1.blocks.1.norm2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.1.blocks.1.mlp.fc1.weight - torch.Size([1024, 256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.blocks.1.mlp.fc1.bias - torch.Size([1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.blocks.1.mlp.fc2.weight - torch.Size([256, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.blocks.1.mlp.fc2.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.downsample.reduction.weight - torch.Size([512, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.1.downsample.norm.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.1.downsample.norm.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.0.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.0.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.0.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.0.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.0.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.0.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.0.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.0.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.0.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.0.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.0.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.0.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.0.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.1.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.1.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.1.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.1.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.1.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.1.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.1.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.1.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.1.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.1.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.1.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.1.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.1.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.2.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.2.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.2.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.2.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.2.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.2.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.2.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.2.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.2.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.2.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.2.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.2.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.2.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.3.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.3.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.3.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.3.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.3.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.3.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.3.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.3.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.3.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.3.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.3.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.3.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.3.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.4.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.4.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.4.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.4.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.4.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.4.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.4.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.4.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.4.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.4.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.4.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.4.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.4.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.5.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.5.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.5.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.5.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.5.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.5.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.5.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.5.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.5.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.5.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.5.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.5.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.5.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.6.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.6.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.6.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.6.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.6.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.6.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.6.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.6.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.6.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.6.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.6.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.6.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.6.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.7.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.7.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.7.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.7.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.7.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.7.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.7.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.7.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.7.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.7.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.7.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.7.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.7.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.8.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.8.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.8.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.8.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.8.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.8.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.8.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.8.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.8.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.8.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.8.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.8.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.8.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.9.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.9.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.9.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.9.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.9.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.9.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.9.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.9.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.9.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.9.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.9.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.9.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.9.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.10.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.10.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.10.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.10.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.10.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.10.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.10.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.10.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.10.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.10.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.10.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.10.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.10.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.11.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.11.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.11.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.11.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.11.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.11.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.11.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.11.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.11.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.11.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.11.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.11.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.11.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.12.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.12.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.12.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.12.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.12.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.12.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.12.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.12.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.12.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.12.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.12.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.12.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.12.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.13.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.13.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.13.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.13.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.13.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.13.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.13.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.13.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.13.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.13.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.13.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.13.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.13.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.14.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.14.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.14.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.14.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.14.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.14.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.14.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.14.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.14.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.14.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.14.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.14.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.14.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.15.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.15.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.15.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.15.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.15.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.15.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.15.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.15.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.15.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.15.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.15.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.15.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.15.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.16.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.16.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.16.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.16.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.16.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.16.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.16.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.16.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.16.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.16.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.16.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.16.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.16.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.17.norm1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.17.norm1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.17.attn.relative_position_bias_table - torch.Size([169, 16]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.17.attn.qkv.weight - torch.Size([1536, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.17.attn.qkv.bias - torch.Size([1536]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.17.attn.proj.weight - torch.Size([512, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.17.attn.proj.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.17.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.17.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.blocks.17.mlp.fc1.weight - torch.Size([2048, 512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.17.mlp.fc1.bias - torch.Size([2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.17.mlp.fc2.weight - torch.Size([512, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.blocks.17.mlp.fc2.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.downsample.reduction.weight - torch.Size([1024, 2048]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.2.downsample.norm.weight - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.2.downsample.norm.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.3.blocks.0.norm1.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.3.blocks.0.norm1.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.3.blocks.0.attn.relative_position_bias_table - torch.Size([169, 32]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.3.blocks.0.attn.qkv.weight - torch.Size([3072, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.3.blocks.0.attn.qkv.bias - torch.Size([3072]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.3.blocks.0.attn.proj.weight - torch.Size([1024, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.3.blocks.0.attn.proj.bias - torch.Size([1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.3.blocks.0.norm2.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.3.blocks.0.norm2.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.3.blocks.0.mlp.fc1.weight - torch.Size([4096, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.3.blocks.0.mlp.fc1.bias - torch.Size([4096]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.3.blocks.0.mlp.fc2.weight - torch.Size([1024, 4096]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.3.blocks.0.mlp.fc2.bias - torch.Size([1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.3.blocks.1.norm1.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.3.blocks.1.norm1.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.3.blocks.1.attn.relative_position_bias_table - torch.Size([169, 32]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.3.blocks.1.attn.qkv.weight - torch.Size([3072, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.3.blocks.1.attn.qkv.bias - torch.Size([3072]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.3.blocks.1.attn.proj.weight - torch.Size([1024, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.3.blocks.1.attn.proj.bias - torch.Size([1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.3.blocks.1.norm2.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.3.blocks.1.norm2.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.layers.3.blocks.1.mlp.fc1.weight - torch.Size([4096, 1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.3.blocks.1.mlp.fc1.bias - torch.Size([4096]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.3.blocks.1.mlp.fc2.weight - torch.Size([1024, 4096]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.layers.3.blocks.1.mlp.fc2.bias - torch.Size([1024]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_modules.1.norm0.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.norm0.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.norm1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.norm1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.norm2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.norm2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.norm3.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_modules.1.norm3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+backbone.cb_linears.0.1.weight - torch.Size([128, 256, 1, 1]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_linears.0.1.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_linears.0.2.weight - torch.Size([128, 512, 1, 1]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_linears.0.2.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_linears.0.3.weight - torch.Size([128, 1024, 1, 1]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_linears.0.3.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_linears.1.1.weight - torch.Size([256, 512, 1, 1]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_linears.1.1.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_linears.1.2.weight - torch.Size([256, 1024, 1, 1]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_linears.1.2.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_linears.2.1.weight - torch.Size([512, 1024, 1, 1]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+backbone.cb_linears.2.1.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in CBSwinTransformer  
+
+neck.lateral_convs.0.conv.weight - torch.Size([256, 128, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+neck.lateral_convs.1.conv.weight - torch.Size([256, 256, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+neck.lateral_convs.2.conv.weight - torch.Size([256, 512, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+neck.lateral_convs.3.conv.weight - torch.Size([256, 1024, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+neck.fpn_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+neck.fpn_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+neck.fpn_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+neck.fpn_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+rpn_head.rpn_conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+rpn_head.rpn_conv.bias - torch.Size([256]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+rpn_head.rpn_cls.weight - torch.Size([5, 256, 1, 1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+rpn_head.rpn_cls.bias - torch.Size([5]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+rpn_head.rpn_reg.weight - torch.Size([20, 256, 1, 1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+rpn_head.rpn_reg.bias - torch.Size([20]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+roi_head.bbox_head.0.fc_cls.weight - torch.Size([2, 1024]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.0.fc_cls.bias - torch.Size([2]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+roi_head.bbox_head.0.fc_reg.weight - torch.Size([4, 1024]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.0.fc_reg.bias - torch.Size([4]): 
+NormalInit: mean=0, std=0.001, bias=0 
+
+roi_head.bbox_head.0.shared_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.0.shared_convs.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.0.shared_convs.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.0.shared_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.0.shared_convs.1.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.0.shared_convs.1.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.0.shared_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.0.shared_convs.2.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.0.shared_convs.2.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.0.shared_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.0.shared_convs.3.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.0.shared_convs.3.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.0.shared_fcs.0.weight - torch.Size([1024, 12544]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.0.shared_fcs.0.bias - torch.Size([1024]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.1.fc_cls.weight - torch.Size([2, 1024]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.1.fc_cls.bias - torch.Size([2]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+roi_head.bbox_head.1.fc_reg.weight - torch.Size([4, 1024]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.1.fc_reg.bias - torch.Size([4]): 
+NormalInit: mean=0, std=0.001, bias=0 
+
+roi_head.bbox_head.1.shared_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.1.shared_convs.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.1.shared_convs.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.1.shared_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.1.shared_convs.1.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.1.shared_convs.1.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.1.shared_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.1.shared_convs.2.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.1.shared_convs.2.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.1.shared_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.1.shared_convs.3.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.1.shared_convs.3.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.1.shared_fcs.0.weight - torch.Size([1024, 12544]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.1.shared_fcs.0.bias - torch.Size([1024]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.2.fc_cls.weight - torch.Size([2, 1024]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.2.fc_cls.bias - torch.Size([2]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+roi_head.bbox_head.2.fc_reg.weight - torch.Size([4, 1024]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.2.fc_reg.bias - torch.Size([4]): 
+NormalInit: mean=0, std=0.001, bias=0 
+
+roi_head.bbox_head.2.shared_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.2.shared_convs.0.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.2.shared_convs.0.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.2.shared_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.2.shared_convs.1.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.2.shared_convs.1.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.2.shared_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.2.shared_convs.2.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.2.shared_convs.2.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.2.shared_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.2.shared_convs.3.bn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.2.shared_convs.3.bn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of HybridTaskCascade  
+
+roi_head.bbox_head.2.shared_fcs.0.weight - torch.Size([1024, 12544]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+
+roi_head.bbox_head.2.shared_fcs.0.bias - torch.Size([1024]): 
+XavierInit: gain=1, distribution=normal, bias=0 
+2022-05-31 13:07:56,100 - mmdet - INFO - load checkpoint from local path: ./work_dirs/new_epoch7/latest.pth
+2022-05-31 13:07:58,440 - mmdet - INFO - Start running, host: r10944040@rose, work_dir: /shared_home/r10944040/ai-cup/CBNetV2/work_dirs/new_epoch7_fine
+2022-05-31 13:07:58,441 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(ABOVE_NORMAL) DistOptimizerHook                  
+(NORMAL      ) CheckpointHook                     
+(NORMAL      ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) EvalHook                           
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) EvalHook                           
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) DistOptimizerHook                  
+(NORMAL      ) CheckpointHook                     
+(NORMAL      ) EvalHook                           
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(NORMAL      ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2022-05-31 13:07:58,441 - mmdet - INFO - workflow: [('train', 1), ('val', 1)], max: 2 epochs
+2022-05-31 13:07:58,443 - mmdet - INFO - Checkpoints will be saved to /shared_home/r10944040/ai-cup/CBNetV2/work_dirs/new_epoch7_fine by HardDiskBackend.
+2022-05-31 13:08:36,069 - mmdet - INFO - Epoch [1][50/1053]	lr: 9.890e-07, eta: 0:25:46, time: 0.752, data_time: 0.047, memory: 8976, loss_rpn_cls0_w0.5: 0.0013, loss_rpn_bbox0_w0.5: 0.0014, loss_rpn_cls1: 0.0018, loss_rpn_bbox1: 0.0019, s0.loss_cls0_w0.5: 0.0498, s0.acc0: 48.0996, s0.loss_bbox0_w0.5: 0.0675, s1.loss_cls0_w0.5: 0.0160, s1.acc0: 48.7285, s1.loss_bbox0_w0.5: 0.0160, s2.loss_cls0_w0.5: 0.0035, s2.acc0: 49.4531, s2.loss_bbox0_w0.5: 0.0028, s0.loss_cls1: 0.0841, s0.acc1: 96.8203, s0.loss_bbox1: 0.1228, s1.loss_cls1: 0.0284, s1.acc1: 97.7070, s1.loss_bbox1: 0.0296, s2.loss_cls1: 0.0063, s2.acc1: 99.0781, s2.loss_bbox1: 0.0053, loss: 0.4386
+2022-05-31 13:09:11,940 - mmdet - INFO - Epoch [1][100/1053]	lr: 1.988e-06, eta: 0:24:34, time: 0.717, data_time: 0.004, memory: 8976, loss_rpn_cls0_w0.5: 0.0016, loss_rpn_bbox0_w0.5: 0.0013, loss_rpn_cls1: 0.0022, loss_rpn_bbox1: 0.0018, s0.loss_cls0_w0.5: 0.0497, s0.acc0: 47.9785, s0.loss_bbox0_w0.5: 0.0694, s1.loss_cls0_w0.5: 0.0160, s1.acc0: 48.7324, s1.loss_bbox0_w0.5: 0.0169, s2.loss_cls0_w0.5: 0.0038, s2.acc0: 49.3965, s2.loss_bbox0_w0.5: 0.0029, s0.loss_cls1: 0.0900, s0.acc1: 96.5352, s0.loss_bbox1: 0.1270, s1.loss_cls1: 0.0287, s1.acc1: 97.8281, s1.loss_bbox1: 0.0318, s2.loss_cls1: 0.0071, s2.acc1: 98.9297, s2.loss_bbox1: 0.0056, loss: 0.4559
+2022-05-31 13:09:47,742 - mmdet - INFO - Epoch [1][150/1053]	lr: 2.987e-06, eta: 0:23:45, time: 0.716, data_time: 0.004, memory: 8976, loss_rpn_cls0_w0.5: 0.0013, loss_rpn_bbox0_w0.5: 0.0010, loss_rpn_cls1: 0.0015, loss_rpn_bbox1: 0.0015, s0.loss_cls0_w0.5: 0.0373, s0.acc0: 48.5566, s0.loss_bbox0_w0.5: 0.0517, s1.loss_cls0_w0.5: 0.0119, s1.acc0: 49.0430, s1.loss_bbox0_w0.5: 0.0132, s2.loss_cls0_w0.5: 0.0026, s2.acc0: 49.5977, s2.loss_bbox0_w0.5: 0.0024, s0.loss_cls1: 0.0636, s0.acc1: 97.4297, s0.loss_bbox1: 0.0939, s1.loss_cls1: 0.0208, s1.acc1: 98.3086, s1.loss_bbox1: 0.0242, s2.loss_cls1: 0.0047, s2.acc1: 99.2227, s2.loss_bbox1: 0.0045, loss: 0.3359
+2022-05-31 13:10:22,417 - mmdet - INFO - Epoch [1][200/1053]	lr: 3.986e-06, eta: 0:22:51, time: 0.693, data_time: 0.004, memory: 8976, loss_rpn_cls0_w0.5: 0.0012, loss_rpn_bbox0_w0.5: 0.0012, loss_rpn_cls1: 0.0024, loss_rpn_bbox1: 0.0019, s0.loss_cls0_w0.5: 0.0525, s0.acc0: 47.8945, s0.loss_bbox0_w0.5: 0.0645, s1.loss_cls0_w0.5: 0.0163, s1.acc0: 48.6699, s1.loss_bbox0_w0.5: 0.0169, s2.loss_cls0_w0.5: 0.0041, s2.acc0: 49.3906, s2.loss_bbox0_w0.5: 0.0031, s0.loss_cls1: 0.0924, s0.acc1: 96.3906, s0.loss_bbox1: 0.1207, s1.loss_cls1: 0.0297, s1.acc1: 97.5977, s1.loss_bbox1: 0.0320, s2.loss_cls1: 0.0076, s2.acc1: 98.8477, s2.loss_bbox1: 0.0060, loss: 0.4526
+2022-05-31 13:10:58,069 - mmdet - INFO - Epoch [1][250/1053]	lr: 4.985e-06, eta: 0:22:13, time: 0.713, data_time: 0.004, memory: 8976, loss_rpn_cls0_w0.5: 0.0016, loss_rpn_bbox0_w0.5: 0.0014, loss_rpn_cls1: 0.0032, loss_rpn_bbox1: 0.0019, s0.loss_cls0_w0.5: 0.0455, s0.acc0: 48.1406, s0.loss_bbox0_w0.5: 0.0593, s1.loss_cls0_w0.5: 0.0148, s1.acc0: 48.8145, s1.loss_bbox0_w0.5: 0.0153, s2.loss_cls0_w0.5: 0.0032, s2.acc0: 49.5117, s2.loss_bbox0_w0.5: 0.0029, s0.loss_cls1: 0.0768, s0.acc1: 96.9023, s0.loss_bbox1: 0.1046, s1.loss_cls1: 0.0253, s1.acc1: 97.9102, s1.loss_bbox1: 0.0279, s2.loss_cls1: 0.0057, s2.acc1: 99.1211, s2.loss_bbox1: 0.0056, loss: 0.3950
+2022-05-31 13:11:37,138 - mmdet - INFO - Epoch [1][300/1053]	lr: 5.984e-06, eta: 0:21:56, time: 0.781, data_time: 0.004, memory: 8986, loss_rpn_cls0_w0.5: 0.0016, loss_rpn_bbox0_w0.5: 0.0017, loss_rpn_cls1: 0.0020, loss_rpn_bbox1: 0.0024, s0.loss_cls0_w0.5: 0.0505, s0.acc0: 47.9863, s0.loss_bbox0_w0.5: 0.0722, s1.loss_cls0_w0.5: 0.0168, s1.acc0: 48.6738, s1.loss_bbox0_w0.5: 0.0193, s2.loss_cls0_w0.5: 0.0041, s2.acc0: 49.3477, s2.loss_bbox0_w0.5: 0.0034, s0.loss_cls1: 0.0867, s0.acc1: 96.5078, s0.loss_bbox1: 0.1318, s1.loss_cls1: 0.0301, s1.acc1: 97.5508, s1.loss_bbox1: 0.0352, s2.loss_cls1: 0.0075, s2.acc1: 98.8242, s2.loss_bbox1: 0.0063, loss: 0.4714
+2022-05-31 13:12:12,645 - mmdet - INFO - Epoch [1][350/1053]	lr: 6.983e-06, eta: 0:21:15, time: 0.710, data_time: 0.004, memory: 8986, loss_rpn_cls0_w0.5: 0.0015, loss_rpn_bbox0_w0.5: 0.0017, loss_rpn_cls1: 0.0027, loss_rpn_bbox1: 0.0026, s0.loss_cls0_w0.5: 0.0579, s0.acc0: 47.5996, s0.loss_bbox0_w0.5: 0.0706, s1.loss_cls0_w0.5: 0.0177, s1.acc0: 48.5879, s1.loss_bbox0_w0.5: 0.0171, s2.loss_cls0_w0.5: 0.0041, s2.acc0: 49.4004, s2.loss_bbox0_w0.5: 0.0031, s0.loss_cls1: 0.1000, s0.acc1: 95.9727, s0.loss_bbox1: 0.1305, s1.loss_cls1: 0.0309, s1.acc1: 97.5859, s1.loss_bbox1: 0.0320, s2.loss_cls1: 0.0072, s2.acc1: 98.9023, s2.loss_bbox1: 0.0060, loss: 0.4856
+2022-05-31 13:12:47,912 - mmdet - INFO - Epoch [1][400/1053]	lr: 7.982e-06, eta: 0:20:34, time: 0.705, data_time: 0.004, memory: 8986, loss_rpn_cls0_w0.5: 0.0016, loss_rpn_bbox0_w0.5: 0.0011, loss_rpn_cls1: 0.0033, loss_rpn_bbox1: 0.0019, s0.loss_cls0_w0.5: 0.0383, s0.acc0: 48.3828, s0.loss_bbox0_w0.5: 0.0537, s1.loss_cls0_w0.5: 0.0112, s1.acc0: 49.0898, s1.loss_bbox0_w0.5: 0.0137, s2.loss_cls0_w0.5: 0.0031, s2.acc0: 49.5059, s2.loss_bbox0_w0.5: 0.0027, s0.loss_cls1: 0.0681, s0.acc1: 97.3125, s0.loss_bbox1: 0.0994, s1.loss_cls1: 0.0205, s1.acc1: 98.3164, s1.loss_bbox1: 0.0256, s2.loss_cls1: 0.0057, s2.acc1: 99.0742, s2.loss_bbox1: 0.0051, loss: 0.3549
+2022-05-31 13:13:22,471 - mmdet - INFO - Epoch [1][450/1053]	lr: 8.981e-06, eta: 0:19:52, time: 0.691, data_time: 0.004, memory: 8986, loss_rpn_cls0_w0.5: 0.0012, loss_rpn_bbox0_w0.5: 0.0010, loss_rpn_cls1: 0.0017, loss_rpn_bbox1: 0.0015, s0.loss_cls0_w0.5: 0.0445, s0.acc0: 48.2637, s0.loss_bbox0_w0.5: 0.0622, s1.loss_cls0_w0.5: 0.0139, s1.acc0: 48.9062, s1.loss_bbox0_w0.5: 0.0152, s2.loss_cls0_w0.5: 0.0032, s2.acc0: 49.4980, s2.loss_bbox0_w0.5: 0.0026, s0.loss_cls1: 0.0769, s0.acc1: 96.8438, s0.loss_bbox1: 0.1167, s1.loss_cls1: 0.0243, s1.acc1: 98.0117, s1.loss_bbox1: 0.0285, s2.loss_cls1: 0.0057, s2.acc1: 99.0742, s2.loss_bbox1: 0.0050, loss: 0.4041
+2022-05-31 13:13:58,961 - mmdet - INFO - Epoch [1][500/1053]	lr: 9.980e-06, eta: 0:19:17, time: 0.730, data_time: 0.004, memory: 8986, loss_rpn_cls0_w0.5: 0.0015, loss_rpn_bbox0_w0.5: 0.0013, loss_rpn_cls1: 0.0017, loss_rpn_bbox1: 0.0019, s0.loss_cls0_w0.5: 0.0465, s0.acc0: 48.1309, s0.loss_bbox0_w0.5: 0.0715, s1.loss_cls0_w0.5: 0.0154, s1.acc0: 48.7227, s1.loss_bbox0_w0.5: 0.0174, s2.loss_cls0_w0.5: 0.0038, s2.acc0: 49.4336, s2.loss_bbox0_w0.5: 0.0030, s0.loss_cls1: 0.0839, s0.acc1: 96.5234, s0.loss_bbox1: 0.1313, s1.loss_cls1: 0.0276, s1.acc1: 97.6797, s1.loss_bbox1: 0.0318, s2.loss_cls1: 0.0068, s2.acc1: 98.9414, s2.loss_bbox1: 0.0056, loss: 0.4508
+2022-05-31 13:14:36,444 - mmdet - INFO - Epoch [1][550/1053]	lr: 1.000e-05, eta: 0:18:45, time: 0.750, data_time: 0.004, memory: 8986, loss_rpn_cls0_w0.5: 0.0011, loss_rpn_bbox0_w0.5: 0.0009, loss_rpn_cls1: 0.0020, loss_rpn_bbox1: 0.0013, s0.loss_cls0_w0.5: 0.0386, s0.acc0: 48.3555, s0.loss_bbox0_w0.5: 0.0522, s1.loss_cls0_w0.5: 0.0121, s1.acc0: 49.0137, s1.loss_bbox0_w0.5: 0.0133, s2.loss_cls0_w0.5: 0.0029, s2.acc0: 49.5605, s2.loss_bbox0_w0.5: 0.0024, s0.loss_cls1: 0.0719, s0.acc1: 96.7188, s0.loss_bbox1: 0.0954, s1.loss_cls1: 0.0224, s1.acc1: 98.1836, s1.loss_bbox1: 0.0248, s2.loss_cls1: 0.0053, s2.acc1: 99.1602, s2.loss_bbox1: 0.0045, loss: 0.3511
+2022-05-31 13:15:13,915 - mmdet - INFO - Epoch [1][600/1053]	lr: 1.000e-05, eta: 0:18:12, time: 0.749, data_time: 0.004, memory: 8986, loss_rpn_cls0_w0.5: 0.0011, loss_rpn_bbox0_w0.5: 0.0012, loss_rpn_cls1: 0.0014, loss_rpn_bbox1: 0.0020, s0.loss_cls0_w0.5: 0.0510, s0.acc0: 47.9883, s0.loss_bbox0_w0.5: 0.0625, s1.loss_cls0_w0.5: 0.0158, s1.acc0: 48.8008, s1.loss_bbox0_w0.5: 0.0162, s2.loss_cls0_w0.5: 0.0038, s2.acc0: 49.4434, s2.loss_bbox0_w0.5: 0.0029, s0.loss_cls1: 0.0855, s0.acc1: 96.5195, s0.loss_bbox1: 0.1159, s1.loss_cls1: 0.0274, s1.acc1: 97.8320, s1.loss_bbox1: 0.0300, s2.loss_cls1: 0.0066, s2.acc1: 99.0039, s2.loss_bbox1: 0.0054, loss: 0.4289
+2022-05-31 13:15:50,170 - mmdet - INFO - Epoch [1][650/1053]	lr: 1.000e-05, eta: 0:17:36, time: 0.725, data_time: 0.004, memory: 8986, loss_rpn_cls0_w0.5: 0.0016, loss_rpn_bbox0_w0.5: 0.0014, loss_rpn_cls1: 0.0022, loss_rpn_bbox1: 0.0018, s0.loss_cls0_w0.5: 0.0482, s0.acc0: 47.9980, s0.loss_bbox0_w0.5: 0.0601, s1.loss_cls0_w0.5: 0.0162, s1.acc0: 48.7266, s1.loss_bbox0_w0.5: 0.0157, s2.loss_cls0_w0.5: 0.0036, s2.acc0: 49.4297, s2.loss_bbox0_w0.5: 0.0029, s0.loss_cls1: 0.0807, s0.acc1: 96.5859, s0.loss_bbox1: 0.1085, s1.loss_cls1: 0.0276, s1.acc1: 97.7422, s1.loss_bbox1: 0.0287, s2.loss_cls1: 0.0064, s2.acc1: 98.9648, s2.loss_bbox1: 0.0054, loss: 0.4111
+2022-05-31 13:16:26,081 - mmdet - INFO - Epoch [1][700/1053]	lr: 1.000e-05, eta: 0:16:59, time: 0.718, data_time: 0.004, memory: 8986, loss_rpn_cls0_w0.5: 0.0007, loss_rpn_bbox0_w0.5: 0.0009, loss_rpn_cls1: 0.0010, loss_rpn_bbox1: 0.0016, s0.loss_cls0_w0.5: 0.0332, s0.acc0: 48.5879, s0.loss_bbox0_w0.5: 0.0554, s1.loss_cls0_w0.5: 0.0116, s1.acc0: 49.0918, s1.loss_bbox0_w0.5: 0.0146, s2.loss_cls0_w0.5: 0.0027, s2.acc0: 49.5566, s2.loss_bbox0_w0.5: 0.0024, s0.loss_cls1: 0.0618, s0.acc1: 97.4883, s0.loss_bbox1: 0.1008, s1.loss_cls1: 0.0216, s1.acc1: 98.2617, s1.loss_bbox1: 0.0263, s2.loss_cls1: 0.0051, s2.acc1: 99.1602, s2.loss_bbox1: 0.0045, loss: 0.3442
+2022-05-31 13:16:59,575 - mmdet - INFO - Epoch [1][750/1053]	lr: 1.000e-05, eta: 0:16:18, time: 0.670, data_time: 0.003, memory: 8995, loss_rpn_cls0_w0.5: 0.0013, loss_rpn_bbox0_w0.5: 0.0017, loss_rpn_cls1: 0.0009, loss_rpn_bbox1: 0.0024, s0.loss_cls0_w0.5: 0.0414, s0.acc0: 48.2617, s0.loss_bbox0_w0.5: 0.0581, s1.loss_cls0_w0.5: 0.0149, s1.acc0: 48.7461, s1.loss_bbox0_w0.5: 0.0161, s2.loss_cls0_w0.5: 0.0034, s2.acc0: 49.4902, s2.loss_bbox0_w0.5: 0.0030, s0.loss_cls1: 0.0713, s0.acc1: 96.7656, s0.loss_bbox1: 0.1050, s1.loss_cls1: 0.0256, s1.acc1: 97.7734, s1.loss_bbox1: 0.0299, s2.loss_cls1: 0.0060, s2.acc1: 99.0938, s2.loss_bbox1: 0.0056, loss: 0.3865
+2022-05-31 13:17:33,367 - mmdet - INFO - Epoch [1][800/1053]	lr: 1.000e-05, eta: 0:15:38, time: 0.676, data_time: 0.003, memory: 8995, loss_rpn_cls0_w0.5: 0.0016, loss_rpn_bbox0_w0.5: 0.0015, loss_rpn_cls1: 0.0021, loss_rpn_bbox1: 0.0021, s0.loss_cls0_w0.5: 0.0526, s0.acc0: 47.8418, s0.loss_bbox0_w0.5: 0.0722, s1.loss_cls0_w0.5: 0.0172, s1.acc0: 48.5918, s1.loss_bbox0_w0.5: 0.0204, s2.loss_cls0_w0.5: 0.0042, s2.acc0: 49.3320, s2.loss_bbox0_w0.5: 0.0037, s0.loss_cls1: 0.0908, s0.acc1: 96.3047, s0.loss_bbox1: 0.1284, s1.loss_cls1: 0.0300, s1.acc1: 97.5234, s1.loss_bbox1: 0.0368, s2.loss_cls1: 0.0077, s2.acc1: 98.7539, s2.loss_bbox1: 0.0069, loss: 0.4781
+2022-05-31 13:18:08,429 - mmdet - INFO - Epoch [1][850/1053]	lr: 1.000e-05, eta: 0:15:01, time: 0.701, data_time: 0.003, memory: 8995, loss_rpn_cls0_w0.5: 0.0009, loss_rpn_bbox0_w0.5: 0.0008, loss_rpn_cls1: 0.0005, loss_rpn_bbox1: 0.0013, s0.loss_cls0_w0.5: 0.0314, s0.acc0: 48.7441, s0.loss_bbox0_w0.5: 0.0503, s1.loss_cls0_w0.5: 0.0103, s1.acc0: 49.1367, s1.loss_bbox0_w0.5: 0.0119, s2.loss_cls0_w0.5: 0.0024, s2.acc0: 49.6309, s2.loss_bbox0_w0.5: 0.0021, s0.loss_cls1: 0.0560, s0.acc1: 97.6523, s0.loss_bbox1: 0.0891, s1.loss_cls1: 0.0183, s1.acc1: 98.4180, s1.loss_bbox1: 0.0220, s2.loss_cls1: 0.0042, s2.acc1: 99.2969, s2.loss_bbox1: 0.0040, loss: 0.3054
+2022-05-31 13:18:45,055 - mmdet - INFO - Epoch [1][900/1053]	lr: 1.000e-05, eta: 0:14:26, time: 0.732, data_time: 0.004, memory: 8995, loss_rpn_cls0_w0.5: 0.0009, loss_rpn_bbox0_w0.5: 0.0010, loss_rpn_cls1: 0.0027, loss_rpn_bbox1: 0.0015, s0.loss_cls0_w0.5: 0.0469, s0.acc0: 48.0684, s0.loss_bbox0_w0.5: 0.0608, s1.loss_cls0_w0.5: 0.0151, s1.acc0: 48.8086, s1.loss_bbox0_w0.5: 0.0152, s2.loss_cls0_w0.5: 0.0035, s2.acc0: 49.4668, s2.loss_bbox0_w0.5: 0.0028, s0.loss_cls1: 0.0811, s0.acc1: 96.8516, s0.loss_bbox1: 0.1105, s1.loss_cls1: 0.0267, s1.acc1: 97.8828, s1.loss_bbox1: 0.0281, s2.loss_cls1: 0.0064, s2.acc1: 99.1055, s2.loss_bbox1: 0.0052, loss: 0.4084
+2022-05-31 13:19:20,536 - mmdet - INFO - Epoch [1][950/1053]	lr: 1.000e-05, eta: 0:13:49, time: 0.710, data_time: 0.004, memory: 8995, loss_rpn_cls0_w0.5: 0.0008, loss_rpn_bbox0_w0.5: 0.0010, loss_rpn_cls1: 0.0010, loss_rpn_bbox1: 0.0015, s0.loss_cls0_w0.5: 0.0345, s0.acc0: 48.6855, s0.loss_bbox0_w0.5: 0.0584, s1.loss_cls0_w0.5: 0.0119, s1.acc0: 49.0957, s1.loss_bbox0_w0.5: 0.0150, s2.loss_cls0_w0.5: 0.0029, s2.acc0: 49.5586, s2.loss_bbox0_w0.5: 0.0027, s0.loss_cls1: 0.0597, s0.acc1: 97.7500, s0.loss_bbox1: 0.1066, s1.loss_cls1: 0.0212, s1.acc1: 98.2969, s1.loss_bbox1: 0.0279, s2.loss_cls1: 0.0053, s2.acc1: 99.1680, s2.loss_bbox1: 0.0052, loss: 0.3558
+2022-05-31 13:19:56,360 - mmdet - INFO - Exp name: swin_custom_fine.py
+2022-05-31 13:19:56,361 - mmdet - INFO - Epoch [1][1000/1053]	lr: 1.000e-05, eta: 0:13:13, time: 0.716, data_time: 0.004, memory: 8995, loss_rpn_cls0_w0.5: 0.0007, loss_rpn_bbox0_w0.5: 0.0013, loss_rpn_cls1: 0.0009, loss_rpn_bbox1: 0.0018, s0.loss_cls0_w0.5: 0.0433, s0.acc0: 48.1621, s0.loss_bbox0_w0.5: 0.0655, s1.loss_cls0_w0.5: 0.0150, s1.acc0: 48.7441, s1.loss_bbox0_w0.5: 0.0157, s2.loss_cls0_w0.5: 0.0034, s2.acc0: 49.4707, s2.loss_bbox0_w0.5: 0.0030, s0.loss_cls1: 0.0727, s0.acc1: 96.9141, s0.loss_bbox1: 0.1180, s1.loss_cls1: 0.0259, s1.acc1: 97.8281, s1.loss_bbox1: 0.0288, s2.loss_cls1: 0.0059, s2.acc1: 99.0430, s2.loss_bbox1: 0.0056, loss: 0.4073
+2022-05-31 13:20:31,248 - mmdet - INFO - Epoch [1][1050/1053]	lr: 1.000e-05, eta: 0:12:37, time: 0.698, data_time: 0.003, memory: 8995, loss_rpn_cls0_w0.5: 0.0014, loss_rpn_bbox0_w0.5: 0.0014, loss_rpn_cls1: 0.0017, loss_rpn_bbox1: 0.0021, s0.loss_cls0_w0.5: 0.0492, s0.acc0: 48.0547, s0.loss_bbox0_w0.5: 0.0682, s1.loss_cls0_w0.5: 0.0158, s1.acc0: 48.7266, s1.loss_bbox0_w0.5: 0.0170, s2.loss_cls0_w0.5: 0.0037, s2.acc0: 49.4531, s2.loss_bbox0_w0.5: 0.0032, s0.loss_cls1: 0.0920, s0.acc1: 96.4023, s0.loss_bbox1: 0.1268, s1.loss_cls1: 0.0300, s1.acc1: 97.6094, s1.loss_bbox1: 0.0321, s2.loss_cls1: 0.0070, s2.acc1: 98.9531, s2.loss_bbox1: 0.0061, loss: 0.4575
+2022-05-31 13:20:33,495 - mmdet - INFO - Saving checkpoint at 1 epochs
