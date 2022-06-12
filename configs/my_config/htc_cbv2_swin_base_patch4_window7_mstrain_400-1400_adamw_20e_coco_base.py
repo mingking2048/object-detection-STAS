@@ -388,17 +388,16 @@ test_mutli_scale_image_size = [(858, 471), (943, 518), (1000, 565), (1115, 612),
 
 albu_train_transforms = [
     dict(
-        type='VerticalFlip',
-        p=0.2),
-    dict(
         type='HorizontalFlip',
         p=0.2),
-
+    dict(
+        type='VerticalFlip',
+        p=0.2),
     dict(
         type='ShiftScaleRotate',
         shift_limit=0.0625,
         scale_limit=0.0,
-        rotate_limit=45,
+        rotate_limit=60,
         interpolation=1,
         p=0.2),
     dict(
@@ -421,16 +420,16 @@ albu_train_transforms = [
                 sat_shift_limit=30,
                 val_shift_limit=20,
                 p=1.0),
-            dict(type='FancyPCA', alpha=0.1, always_apply=False, p=1.0), #trick
+            dict(type='FancyPCA', alpha=0.1, always_apply=False, p=1.0), 
         ],
         p=0.1),
-    dict(type='RandomRotate90', always_apply=False, p=0.5), # 随机旋转
+    dict(type='RandomRotate90', always_apply=False, p=0.5), 
     dict(
         type='OneOf',
         transforms=[
             dict(type='Blur', blur_limit=3, p=1.0),
             dict(type='MedianBlur', blur_limit=3, p=1.0),
-            dict(type='MotionBlur', blur_limit=6, always_apply=False, p=1.0)#trick
+            dict(type='MotionBlur', blur_limit=6, always_apply=False, p=1.0)
         ],
         p=0.1),
 ]
@@ -527,6 +526,3 @@ evaluation = dict(metric=['mAP'])
 load_from = './pretrain_model_weight/htc_cbv2_swin_base22k_patch4_window7_mstrain_400-1400_giou_4conv1f_adamw_20e_coco.pth'
 
 
-#CUDA_VISIBLE_DEVICES=1 python -m torch.distributed.launch --master_port 29502 tools/train.py configs/my_config/htc_cbv2_swin_base_patch4_window7_mstrain_400-1400_adamw_20e_coco_base.py --gpus 1 --deterministic --seed 123  --work-dir work_dirs/swin_custom_v10-2
-#CUDA_VISIBLE_DEVICES=1 python -m torch.distributed.launch --master_port 29502 tools/train.py configs/my_config/htc_cbv2_swin_base_patch4_window7_mstrain_400-1400_adamw_20e_coco_finetune.py --gpus 1 --deterministic --seed 123  --work-dir work_dirs/swin_custom_v10-2
-#CUDA_VISIBLE_DEVICES=3 python tools/test.py configs/my_config/htc_cbv2_swin_base_patch4_window7_mstrain_400-1400_adamw_20e_coco_finetune.py work_dirs/new_epoch7_fine/latest.pth --out result_test.json --show --show-dir ckpt
